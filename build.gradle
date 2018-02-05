@@ -52,4 +52,4 @@ findbugs {
     ignoreFailures = true
 }
 
-defaultTasks 'build', 'findbugsMain', 'findbugsTest', 'fatJar'
+defaultTasks 'findbugsMain', 'findbugsTest', 'fatJar'
