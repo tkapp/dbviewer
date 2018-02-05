@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import net.teekee.dbexplorer.domain.Database;
+import net.teekee.dbexplorer.domain.Context;
 
 /**
  * Database connector.
@@ -14,19 +14,19 @@ public interface Connecter {
 	/**
 	 * connect to database.
 	 * 
-	 * @param database database connection settings.
+	 * @param context database connection settings.
 	 * @return Database connection.
 	 */
-	default public Connection getConnection(Database database) {
+	default public Connection getConnection(Context context) {
 		//
 		try {
 			//
-			Class.forName(DatabaseKinds.MySql.driverName);
+			Class.forName(DatabaseEngine.MySql.driverName);
 
-			String user = database.name;
-			String password = database.password;
+			String user = context.user;
+			String password = context.password;
 
-			String url = createUrl(database);
+			String url = createUrl(context);
 
 			Connection connection = DriverManager.getConnection(url, user, password);
 			connection.setAutoCommit(false);
@@ -42,8 +42,8 @@ public interface Connecter {
 	/**
 	 * create url for database connect.
 	 * 
-	 * @param database database database connection settings.
+	 * @param context database connection settings.
 	 * @return url for database connect.
 	 */
-	String createUrl(Database database);
+	String createUrl(Context context);
 }

@@ -1,6 +1,6 @@
 package net.teekee.dbexplorer.db;
 
-import net.teekee.dbexplorer.domain.Database;
+import net.teekee.dbexplorer.domain.Context;
 
 /**
  * Connecter for MySQL. 
@@ -8,11 +8,11 @@ import net.teekee.dbexplorer.domain.Database;
 public class MySQLConnecter implements Connecter {
 
 	/**
-	 * @see net.teekee.dbexplorer.db.Connecter#getConnection(Database)
+	 * @see net.teekee.dbexplorer.db.Connecter#getConnection(Context)
 	 */
 	@Override
-	public String createUrl(Database database) {
-		String url = "jdbc:mysql://" + database.host + ":" + database.port + "/" + database.database + "?useUnicode=true&characterEncoding=" + database.charset;
+	public String createUrl(Context context) {
+		String url = "jdbc:mysql://" + context.host + ":" + context.port + "/" + context.database + "?useUnicode=true&characterEncoding=" + context.charset;
 		return url;
 	}
 }

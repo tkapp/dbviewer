@@ -1,9 +1,9 @@
 package net.teekee.dbexplorer.db;
 
 /**
- * Database kind. 
+ * Database engine kind. 
  */
-public enum DatabaseKinds {
+public enum DatabaseEngine {
 
 	/** MySQL. */
 	MySql("MySQL", "com.mysql.jdbc.Driver"),
@@ -25,10 +25,10 @@ public enum DatabaseKinds {
 	/**
 	 * Constructor.
 	 * 
-	 * @param identifier database identifier.
-	 * @param driverName dbc driver class name.
+	 * @param identifier database engine identifier.
+	 * @param driverName jdbc driver class name.
 	 */
-	DatabaseKinds(String identifier, String driverName) {
+	DatabaseEngine(String identifier, String driverName) {
 		this.identifier = identifier;
 		this.driverName = driverName;
 	}

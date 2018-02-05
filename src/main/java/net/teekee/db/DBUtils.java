@@ -27,7 +27,7 @@ public class DBUtils {
 	 */
 	public static List<Map<String, Object>> select(Connection connection, String query, Object... params) {
 
-		return select(connection, query, rs -> {
+		return select(connection, rs -> {
 
 			try {
 
@@ -35,23 +35,24 @@ public class DBUtils {
 				int columnCount = metaData.getColumnCount();
 
 				return convertToMap(rs, metaData, columnCount);
-				
+
 			} catch (SQLException e) {
 				throw new RuntimeException("Can't execute query. query=" + query, e);
 			}
 
-		}, params);
+		}, query, params);
 	}
 
 	/**
 	 * execute query and convert to Map object.
 	 * 
 	 * @param connection DB connection.
+	 * @param object factory.
 	 * @param query SQL query.
 	 * @param params bind parameter.
 	 * @return entity list. if query result is empty, return empty list.
 	 */
-	public static <T> List<T> select(Connection connection, String query, Function<ResultSet, T> factory, Object... params) {
+	public static <T> List<T> select(Connection connection, Function<ResultSet, T> factory, String query, Object... params) {
 
 		try (PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -75,18 +76,32 @@ public class DBUtils {
 
 	public static Map<String, Object> selectOne(Connection connection, String query, Object... params) throws SQLException {
 
+		return selectOne(connection, rs -> {
+			
+			try {
+				ResultSetMetaData metaData = rs.getMetaData();
+				int columnCount = metaData.getColumnCount();
+
+				Map<String, Object> item = convertToMap(rs, metaData, columnCount);
+				return item;
+			} catch (SQLException e) {
+				throw new RuntimeException("Can't convert map.", e);
+			}
+			
+		}, query, params);
+	}
+
+	public static <T> T selectOne(Connection connection, Function<ResultSet, T> factory, String query, Object... params) throws SQLException {
+
 		try (PreparedStatement statement = connection.prepareStatement(query)) {
 
 			setParams(statement, params);
 
 			try (ResultSet rs = statement.executeQuery()) {
 
-				ResultSetMetaData metaData = rs.getMetaData();
-				int columnCount = metaData.getColumnCount();
-
 				if (rs.next()) {
 
-					Map<String, Object> item = convertToMap(rs, metaData, columnCount);
+					T item = factory.apply(rs);
 					return item;
 
 				} else {
@@ -98,7 +113,15 @@ public class DBUtils {
 		}
 	}
 
-	public static int count(Connection connection, String query, Object... params) throws SQLException {
+	/**
+	 * execute query for count.
+	 * 
+	 * @param connection database connection.
+	 * @param query SQL query.
+	 * @param params bind parameters.
+	 * @return record count.
+	 */
+	public static int count(Connection connection, String query, Object... params) {
 
 		try (PreparedStatement statement = connection.prepareStatement(query)) {
 

@@ -5,14 +5,14 @@ import java.sql.Connection;
 import org.apache.commons.lang3.StringUtils;
 
 import net.teekee.dbexplorer.db.Connecter;
-import net.teekee.dbexplorer.db.DatabaseKinds;
+import net.teekee.dbexplorer.db.DatabaseEngine;
 import net.teekee.dbexplorer.db.MySQLConnecter;
 import net.teekee.util.PropertyUtils;
 
 /**
  * Database Connection settings.
  */
-public class Database {
+public class Context {
 
 	/** DB */
 	private Connecter connecter;
@@ -43,7 +43,7 @@ public class Database {
 	 * 
 	 * @param name setting name.
 	 */
-	public Database(String name) {
+	public Context(String name) {
 
 		this.name = name;
 		this.host = PropertyUtils.getProperty("db.properties", name + ".host");
@@ -52,7 +52,7 @@ public class Database {
 		this.password = PropertyUtils.getProperty("db.properties", name + ".password");
 		this.database = PropertyUtils.getProperty("db.properties", name + ".database");
 
-		setDatabase(DatabaseKinds.MySql.identifier);
+		setDatabase(DatabaseEngine.MySql.identifier);
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class Database {
 	 * @param identifier DB identifier.
 	 */
 	private void setDatabase(String identifier) {
-		if (StringUtils.equals(identifier, DatabaseKinds.MySql.identifier)) {
+		if (StringUtils.equals(identifier, DatabaseEngine.MySql.identifier)) {
 			connecter = new MySQLConnecter();
 		} else {
 			throw new RuntimeException(identifier + " is not define.");

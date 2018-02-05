@@ -1,17 +1,32 @@
 package net.teekee.dbexplorer;
 
-import static spark.Spark.*;
+import static spark.Spark.after;
+import static spark.Spark.afterAfter;
+import static spark.Spark.before;
+import static spark.Spark.exception;
+import static spark.Spark.get;
+import static spark.Spark.halt;
+import static spark.Spark.port;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
 import net.teekee.db.DBUtils;
+import net.teekee.dbexplorer.constant.AttributeNames;
 import net.teekee.dbexplorer.constant.ContentType;
-import net.teekee.dbexplorer.domain.Database;
+import net.teekee.dbexplorer.constant.ParameterNames;
+import net.teekee.dbexplorer.constant.PropertyConstant;
+import net.teekee.dbexplorer.domain.Column;
+import net.teekee.dbexplorer.domain.Context;
+import net.teekee.dbexplorer.domain.DatabaseObject;
+import net.teekee.dbexplorer.domain.Table;
 import net.teekee.util.PropertyUtils;
 import spark.Filter;
 import spark.Route;
@@ -41,36 +56,40 @@ public class DBExplorer {
 
 		port(8080);
 
-		before("/:database/*", connectionFilter);
+		before("/:context/*", (request, response) -> {
+			String contextName = request.params(ParameterNames.CONTEXT);
+			Context context = new Context(contextName);
+
+			if (context.host == null) {
+				halt(404);
+			}
+
+			Connection connection = context.getConnection();
+			request.attribute(AttributeNames.CONNECTION, connection);
+			request.attribute(AttributeNames.CONTEXT, context);
+		});
 
 		get("/", getIndex);
-		get("/:database/objects", getObjects);
-
-		get("/:database/:table/columns/", (request, response) -> {
-			return "";
-		});
-
-		get("/:database/:table/column", (request, response) -> {
-			return "";
-		});
+		get("/:context/objects", getObjects);
+		get("/:context/:table/columns", getColumns);
 
 		after((request, response) -> {
-			Connection connection = (Connection) request.attribute(ParameterNames.CONNECTION);
+			Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
 			connection.commit();
 		});
 
 		afterAfter((request, response) -> {
-			Connection connection = (Connection) request.attribute(ParameterNames.CONNECTION);
+			Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
 			connection.close();
 		});
 
 		exception(Exception.class, (exception, request, response) -> {
-			
+
 			try {
 				exception.printStackTrace();
-				Connection connection = (Connection) request.attribute(ParameterNames.CONNECTION);
+				Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
 				connection.rollback();
-				connection.close(); // TODO 
+				connection.close(); // TODO
 				halt(500);
 			} catch (SQLException e) {
 				// TODO
@@ -80,21 +99,6 @@ public class DBExplorer {
 		});
 	}
 
-	protected static Filter connectionFilter = (request, response) -> {
-		
-		String databaseName = request.params(ParameterNames.DATABASE);
-		Database database = new Database(databaseName);
-
-		if (database.host == null) {
-			halt(404);
-		}
-		
-		Connection connection = database.getConnection();
-		request.attribute(ParameterNames.CONNECTION, connection);
-		request.attribute(ParameterNames.DATABASE, database);
-		
-	};
-
 	/**
 	 * GET /.
 	 * 
@@ -102,24 +106,57 @@ public class DBExplorer {
 	 */
 	protected static Route getIndex = (request, response) -> {
 
-		String value = PropertyUtils.getProperty("db.properties", "databases");
-		String[] databases = (StringUtils.isEmpty(value)) ? new String[0] : value.split(",");
+		String value = PropertyUtils.getProperty(PropertyConstant.DB, PropertyConstant.CONTEXTS);
+		String[] contexts = (StringUtils.isEmpty(value)) ? new String[0] : value.split(",");
 
 		response.type(ContentType.APPLICATION_JSON.name);
-		return new Gson().toJson(databases);
+		return new Gson().toJson(contexts);
 	};
 
 	/**
-	 * GET /database:/schema
+	 * GET /:context/objects.
 	 */
 	protected static Route getObjects = (request, response) -> {
 
-		Connection connection = (Connection) request.attribute(ParameterNames.CONNECTION);
-		Database database = (Database) request.attribute(ParameterNames.DATABASE_OBJECT);
+		Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
+		Context context = (Context) request.attribute(AttributeNames.CONTEXT);
 
-		DBUtils.select(connection, "select * from information_schema.TABLES where ", database.database);
+		List<Table> tables = DBUtils.select(connection, Table.create,
+				"SELECT table_name name, table_comment comment FROM information_schema.tables WHERE table_type = 'BASE TABLE' and UPPER(table_schema) = ? order by name",
+				context.database.toUpperCase());
 
-		return "";
+		List<Table> views = DBUtils.select(connection, Table.create,
+				"SELECT table_name name, table_comment comment FROM information_schema.tables WHERE table_type = 'VIEW' and UPPER(table_schema) = ? order by name",
+				context.database.toUpperCase());
+
+		Map<String, List<? extends DatabaseObject>> result = new HashMap<>();
+		result.put("tables", tables);
+		result.put("views", views);
+
+		response.type(ContentType.APPLICATION_JSON.name);
+		return new Gson().toJson(result);
 	};
 
+	/**
+	 * GET /:context/:table/columns.
+	 */
+	protected static Route getColumns = (request, response) -> {
+
+		Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
+		Context context = (Context) request.attribute(AttributeNames.CONTEXT);
+		String tableName = request.params(ParameterNames.TABLE);
+
+		Table table = DBUtils.selectOne(connection, Table.create,
+				"SELECT table_name name FROM information_schema.tables WHERE table_type = 'BASE TABLE' and UPPER(table_schema) = ?", tableName.toUpperCase());
+		if (table == null) {
+			halt(404, "no such table.");
+		}
+
+		List<Column> columns = DBUtils.select(connection, Column.create,
+				"SELECT column_name name, column_comment FROM information_schema.columns WHERE UPPER(table_schema) = ? AND UPPER(table_name) = ? ORDER BY name",
+				context.database.toUpperCase(), tableName.toUpperCase());
+
+		response.type(ContentType.APPLICATION_JSON.name);
+		return new Gson().toJson(columns);
+	};
 }
