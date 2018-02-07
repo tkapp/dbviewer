@@ -43,7 +43,7 @@ public class PropertyUtils {
 				throw new RuntimeException(e);
 			}
 		} else {
-			throw new RuntimeException("property file not found. name ->" + path, e);
+			throw new RuntimeException("property file not found. name ->" + path);
 		}
 
 		return p;
