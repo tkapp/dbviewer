@@ -17,161 +17,192 @@ import java.util.function.Function;
  */
 public class DBUtils {
 
-	/**
-	 * execute query and convert to Map object.
-	 * 
-	 * @param connection DB connection.
-	 * @param query SQL query.
-	 * @param params bind parameter.
-	 * @return entity list. if query result is empty, return empty list.
-	 */
-	public static List<Map<String, Object>> select(Connection connection, String query, Object... params) {
+  /**
+   * Constructor.
+   */
+  private DBUtils() {
+  }
 
-		return select(connection, rs -> {
+  /**
+   * execute query and convert to Map object.
+   *
+   * @param connection DB connection.
+   * @param query SQL query.
+   * @param params bind parameter.
+   * @return entity list. if query result is empty, return empty list.
+   */
+  public static List<Map<String, Object>> select(final Connection connection, final String query, final Object... params) {
 
-			try {
+    return select(connection, rs -> {
 
-				ResultSetMetaData metaData = rs.getMetaData();
-				int columnCount = metaData.getColumnCount();
+      try {
 
-				return convertToMap(rs, metaData, columnCount);
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
 
-			} catch (SQLException e) {
-				throw new RuntimeException("Can't execute query. query=" + query, e);
-			}
+        return convertToMap(rs, metaData, columnCount);
 
-		}, query, params);
-	}
+      } catch (SQLException e) {
+        throw new RuntimeException("Can't execute query. query=" + query, e);
+      }
 
-	/**
-	 * execute query and convert to Map object.
-	 * 
-	 * @param connection DB connection.
-	 * @param object factory.
-	 * @param query SQL query.
-	 * @param params bind parameter.
-	 * @return entity list. if query result is empty, return empty list.
-	 */
-	public static <T> List<T> select(Connection connection, Function<ResultSet, T> factory, String query, Object... params) {
+    }, query, params);
+  }
 
-		try (PreparedStatement statement = connection.prepareStatement(query)) {
+  /**
+   * execute query and convert to object.
+   * 
+   * @param connection DB connection.
+   * @param factory factory.
+   * @param query SQL query.
+   * @param params bind parameter.
+   * @return entity list. if query result is empty, return empty list.
+   */
+  public static <T> List<T> select(Connection connection, Function<ResultSet, T> factory, String query, Object... params) {
 
-			setParams(statement, params);
+    try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-			try (ResultSet rs = statement.executeQuery()) {
+      setParams(statement, params);
 
-				List<T> result = new ArrayList<>();
+      try (ResultSet rs = statement.executeQuery()) {
 
-				while (rs.next()) {
+        List<T> result = new ArrayList<>();
 
-					result.add(factory.apply(rs));
-				}
+        while (rs.next()) {
 
-				return result;
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't execute query. query=" + query, e);
-		}
-	}
+          result.add(factory.apply(rs));
+        }
 
-	public static Map<String, Object> selectOne(Connection connection, String query, Object... params) throws SQLException {
+        return result;
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Can't execute query. query=" + query, e);
+    }
+  }
 
-		return selectOne(connection, rs -> {
-			
-			try {
-				ResultSetMetaData metaData = rs.getMetaData();
-				int columnCount = metaData.getColumnCount();
+  /**
+   * execute query and convert to Map object.
+   *
+   * @param connection DB connection.
+   * @param query SQL query.
+   * @param params bind parameter.
+   * @return entity as Map.
+   */
+  public static Map<String, Object> selectOne(Connection connection, String query, Object... params) throws SQLException {
 
-				Map<String, Object> item = convertToMap(rs, metaData, columnCount);
-				return item;
-			} catch (SQLException e) {
-				throw new RuntimeException("Can't convert map.", e);
-			}
-			
-		}, query, params);
-	}
+    return selectOne(connection, rs -> {
 
-	public static <T> T selectOne(Connection connection, Function<ResultSet, T> factory, String query, Object... params) throws SQLException {
+      try {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
 
-		try (PreparedStatement statement = connection.prepareStatement(query)) {
+        Map<String, Object> item = convertToMap(rs, metaData, columnCount);
+        return item;
+      } catch (SQLException e) {
+        throw new RuntimeException("Can't convert map.", e);
+      }
 
-			setParams(statement, params);
+    }, query, params);
+  }
 
-			try (ResultSet rs = statement.executeQuery()) {
+  /**
+   * execute query and convert to Map object.
+   *
+   * @param connection DB connection.
+   * @param factory object factory.
+   * @param query SQL query.
+   * @param params bind parameter.
+   * @return entity.
+   */
+  public static <T> T selectOne(Connection connection, Function<ResultSet, T> factory, String query, Object... params) throws SQLException {
 
-				if (rs.next()) {
+    try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-					T item = factory.apply(rs);
-					return item;
+      setParams(statement, params);
 
-				} else {
-					return null;
-				}
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't execute query. query=" + query, e);
-		}
-	}
+      try (ResultSet rs = statement.executeQuery()) {
 
-	/**
-	 * execute query for count.
-	 * 
-	 * @param connection database connection.
-	 * @param query SQL query.
-	 * @param params bind parameters.
-	 * @return record count.
-	 */
-	public static int count(Connection connection, String query, Object... params) {
+        if (rs.next()) {
 
-		try (PreparedStatement statement = connection.prepareStatement(query)) {
+          T item = factory.apply(rs);
+          return item;
 
-			setParams(statement, params);
+        } else {
+          return null;
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Can't execute query. query=" + query, e);
+    }
+  }
 
-			try (ResultSet rs = statement.executeQuery()) {
-				rs.next();
-				return rs.getInt(1);
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't execute query. query=" + query, e);
-		}
-	}
+  /**
+   * execute query for count.
+   * 
+   * @param connection database connection.
+   * @param query SQL query.
+   * @param params bind parameters.
+   * @return record count.
+   */
+  public static int count(Connection connection, String query, Object... params) {
 
-	public static int execute(Connection connection, String sql) throws SQLException {
-		//
-		return execute(connection, sql, new Object[0]);
-	}
+    try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-	public static int execute(Connection connection, String sql, Object... params) throws SQLException {
-		//
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+      setParams(statement, params);
 
-			setParams(statement, params);
+      try (ResultSet rs = statement.executeQuery()) {
+        rs.next();
+        return rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Can't execute query. query=" + query, e);
+    }
+  }
 
-			return statement.executeUpdate();
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't execute sql. sql=" + sql, e);
-		}
-	}
+  /**
+   * Executes SQL that is DDL or DML.
+   * 
+   * @param connection connection.
+   * @param sql sql.
+   * @return record count that is executed.
+   * @throws SQLException
+   */
+  public static int execute(Connection connection, String sql) throws SQLException {
+    //
+    return execute(connection, sql, new Object[0]);
+  }
 
-	private static void setParams(PreparedStatement statement, Object... params) throws SQLException {
-		//
-		for (int i = 0; i < params.length; i++) {
-			if (params[i] instanceof Integer || params[i].getClass() == int.class) {
-				statement.setInt(i + 1, (int) params[i]);
-			} else if (params[i] instanceof BigInteger) {
-				statement.setInt(i + 1, ((BigInteger) params[i]).intValue());
-			} else { // TODO
-				statement.setString(i + 1, (String) params[i]);
-			}
-		}
-	}
+  public static int execute(Connection connection, String sql, Object... params) throws SQLException {
+    //
+    try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
-	private static Map<String, Object> convertToMap(ResultSet rs, ResultSetMetaData metaData, int columnCount) throws SQLException {
-		Map<String, Object> item = new HashMap<>();
+      setParams(statement, params);
 
-		for (int i = 0; i < columnCount; i++) {
-			item.put(metaData.getColumnName(i + 1), rs.getObject(i + 1));
-		}
-		return item;
-	}
+      return statement.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException("Can't execute sql. sql=" + sql, e);
+    }
+  }
+
+  private static void setParams(PreparedStatement statement, Object... params) throws SQLException {
+    //
+    for (int i = 0; i < params.length; i++) {
+      if (params[i] instanceof Integer || params[i].getClass() == int.class) {
+        statement.setInt(i + 1, (int) params[i]);
+      } else if (params[i] instanceof BigInteger) {
+        statement.setInt(i + 1, ((BigInteger) params[i]).intValue());
+      } else { // TODO
+        statement.setString(i + 1, (String) params[i]);
+      }
+    }
+  }
+
+  private static Map<String, Object> convertToMap(ResultSet rs, ResultSetMetaData metaData, int columnCount) throws SQLException {
+    Map<String, Object> item = new HashMap<>();
+
+    for (int i = 0; i < columnCount; i++) {
+      item.put(metaData.getColumnName(i + 1), rs.getObject(i + 1));
+    }
+    return item;
+  }
 }

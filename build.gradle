@@ -17,6 +17,12 @@ apply plugin: 'checkstyle'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+sourceSets {
+    test {
+        output.resourcesDir = output.classesDir
+    }
+}
+
 repositories {
     jcenter()
 }

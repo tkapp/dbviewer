@@ -42,8 +42,6 @@ public class PropertyUtils {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-		} else {
-			throw new RuntimeException("property file not found. name ->" + path);
 		}
 
 		return p;
