@@ -1,6 +1,7 @@
 package net.teekee.dbexplorer.domain;
 
 import java.sql.Connection;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,6 +39,10 @@ public class Context {
 	/** character set. */
 	public String charset;
 
+	public List<Table> tables;
+	
+	public List<View> views;
+	
 	/**
 	 * Constructor.
 	 * 

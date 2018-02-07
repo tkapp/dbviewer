@@ -7,15 +7,15 @@ import spark.Response;
  */
 public class ResponseTestWrapper extends Response {
 
-	private String type;
-	
-	@Override
-	public void type(String type) {
-		this.type = type;
-	}
-	
-	@Override
-	public String type() {
-		return type;
-	}
+  private String type;
+
+  @Override
+  public void type(String type) {
+    this.type = type;
+  }
+
+  @Override
+  public String type() {
+    return type;
+  }
 }
