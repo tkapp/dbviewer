@@ -58,7 +58,7 @@ public class DBUtils {
    * @param params bind parameter.
    * @return entity list. if query result is empty, return empty list.
    */
-  public static <T> List<T> select(Connection connection, Function<ResultSet, T> factory, String query, Object... params) {
+  public static <T> List<T> select(final Connection connection, final Function<ResultSet, T> factory, final String query, final Object... params) {
 
     try (PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -165,7 +165,7 @@ public class DBUtils {
    * @param connection connection.
    * @param sql sql.
    * @return record count that is executed.
-   * @throws SQLException
+   * @throws SQLException when fail execute sql.
    */
   public static int execute(Connection connection, String sql) throws SQLException {
     //

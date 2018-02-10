@@ -28,13 +28,12 @@ import net.teekee.dbexplorer.domain.Context;
 import net.teekee.dbexplorer.domain.DatabaseObject;
 import net.teekee.dbexplorer.domain.Table;
 import net.teekee.util.PropertyUtils;
-import spark.Filter;
 import spark.Route;
 
 /**
  * DBExplorer Start up class.
  */
-public class DBExplorer {
+public final class DBExplorer {
 
   /**
    * DBExplorer Main method.
@@ -101,7 +100,7 @@ public class DBExplorer {
 
   /**
    * GET /.
-   * 
+   *
    * show database list as json.
    */
   protected static Route getIndex = (request, response) -> {

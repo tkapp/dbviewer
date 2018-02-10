@@ -1,6 +1,6 @@
 package net.teekee.dbexplorer.constant;
 
-public class AttributeNames {
+public final class AttributeNames {
 
   public static final String CONNECTION = "connection";
 

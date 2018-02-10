@@ -1,6 +1,6 @@
 package net.teekee.dbexplorer.constant;
 
-public class ParameterNames {
+public final class ParameterNames {
 
   public static final String CONTEXT = "context";
 

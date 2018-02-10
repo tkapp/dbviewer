@@ -33,7 +33,7 @@ public enum DatabaseEngine {
     this.driverName = driverName;
   }
 
-  /** database kind identifier */
+  /** database kind identifier. */
   public final String identifier;
 
   /** jdbc driver class name. */

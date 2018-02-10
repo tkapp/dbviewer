@@ -15,70 +15,70 @@ import net.teekee.util.PropertyUtils;
  */
 public class Context {
 
-	/** DB */
-	private Connecter connecter;
+  /** DB */
+  private Connecter connecter;
 
-	/** setting name. */
-	public String name;
+  /** setting name. */
+  public String name;
 
-	/** DB port. */
-	public String port;
+  /** DB port. */
+  public String port;
 
-	/** host name or host address. */
-	public String host;
+  /** host name or host address. */
+  public String host;
 
-	/** user name for database login. */
-	public String user;
+  /** user name for database login. */
+  public String user;
 
-	/** password for database login. */
-	public String password;
+  /** password for database login. */
+  public String password;
 
-	/** database name. */
-	public String database;
+  /** database name. */
+  public String database;
 
-	/** character set. */
-	public String charset;
+  /** character set. */
+  public String charset;
 
-	public List<Table> tables;
-	
-	public List<View> views;
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param name setting name.
-	 */
-	public Context(String name) {
+  public List<Table> tables;
 
-		this.name = name;
-		this.host = PropertyUtils.getProperty("db.properties", name + ".host");
-		this.port = PropertyUtils.getProperty("db.properties", name + ".port");
-		this.user = PropertyUtils.getProperty("db.properties", name + ".user");
-		this.password = PropertyUtils.getProperty("db.properties", name + ".password");
-		this.database = PropertyUtils.getProperty("db.properties", name + ".database");
+  public List<View> views;
 
-		setDatabase(DatabaseEngine.MySql.identifier);
-	}
+  /**
+   * Constructor.
+   * 
+   * @param name setting name.
+   */
+  public Context(String name) {
 
-	/**
-	 * set kind of database.
-	 * 
-	 * @param identifier DB identifier.
-	 */
-	private void setDatabase(String identifier) {
-		if (StringUtils.equals(identifier, DatabaseEngine.MySql.identifier)) {
-			connecter = new MySQLConnecter();
-		} else {
-			throw new RuntimeException(identifier + " is not define.");
-		}
-	}
+    this.name = name;
+    this.host = PropertyUtils.getProperty("db.properties", name + ".host");
+    this.port = PropertyUtils.getProperty("db.properties", name + ".port");
+    this.user = PropertyUtils.getProperty("db.properties", name + ".user");
+    this.password = PropertyUtils.getProperty("db.properties", name + ".password");
+    this.database = PropertyUtils.getProperty("db.properties", name + ".database");
 
-	/**
-	 * get database connection.
-	 * 
-	 * @return database connection.
-	 */
-	public Connection getConnection() {
-		return connecter.getConnection(this);
-	}
+    setDatabase(DatabaseEngine.MySql.identifier);
+  }
+
+  /**
+   * set kind of database.
+   * 
+   * @param identifier DB identifier.
+   */
+  private void setDatabase(String identifier) {
+    if (StringUtils.equals(identifier, DatabaseEngine.MySql.identifier)) {
+      connecter = new MySQLConnecter();
+    } else {
+      throw new RuntimeException(identifier + " is not define.");
+    }
+  }
+
+  /**
+   * get database connection.
+   * 
+   * @return database connection.
+   */
+  public Connection getConnection() {
+    return connecter.getConnection(this);
+  }
 }

@@ -8,6 +8,8 @@ import net.teekee.dbexplorer.domain.Context;
 public class MySQLConnecter implements Connecter {
 
   /**
+   * create url for connect to MySQL.
+   *
    * @see net.teekee.dbexplorer.db.Connecter#getConnection(Context)
    */
   @Override
