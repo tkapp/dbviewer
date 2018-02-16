@@ -12,7 +12,7 @@ public class RequestTestWrapper extends Request {
 
   private Map<String, Object> attributes = new HashMap<>();
 
-  private Map<String, Object> params = new HashMap<>();
+  private Map<String, String> params = new HashMap<>();
 
   @Override
   public void attribute(String key, Object value) {
@@ -25,7 +25,12 @@ public class RequestTestWrapper extends Request {
     return (T) attributes.get(key);
   }
 
-  public void params(String key, Object value) {
+  public void params(String key, String value) {
     params.put(key, value);
   }
+  
+  public String params(String key) {
+    return params.get(key);
+  }
+
 }

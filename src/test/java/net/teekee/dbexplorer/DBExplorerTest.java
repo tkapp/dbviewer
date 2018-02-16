@@ -1,13 +1,10 @@
 package net.teekee.dbexplorer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,13 +14,15 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import net.teekee.dbexplorer.constant.AttributeNames;
+import net.teekee.dbexplorer.constant.ParameterNames;
 import net.teekee.dbexplorer.constant.PropertyConstant;
 import net.teekee.dbexplorer.db.DatabaseEngine;
 import net.teekee.dbexplorer.db.MySQLConnecter;
+import net.teekee.dbexplorer.domain.Column;
 import net.teekee.dbexplorer.domain.Context;
-import net.teekee.dbexplorer.domain.Table;
 import net.teekee.dbexplorer.test.RequestTestWrapper;
 import net.teekee.dbexplorer.test.ResponseTestWrapper;
+import spark.HaltException;
 
 /**
  * DBExplorer test class.
@@ -136,5 +135,32 @@ public class DBExplorerTest {
 
     assertTrue("can get empty table list.", actual.tables.size() == 0);
     assertTrue("can get empty view list.", actual.views.size() == 0);
+  }
+
+  @Test
+  public void getColumns() throws Exception {
+
+    Context context = (Context) request.attribute(AttributeNames.CONTEXT);
+    context.database = "mysql";
+    request.params(ParameterNames.TABLE, "user");
+
+    String json = (String) DBExplorer.getColumns.handle(request, response);
+    Column[] actual = new Gson().fromJson(json, TypeToken.getArray(Column.class).getType());
+
+    assertTrue("can get column list", actual.length> 0);
+  }
+
+  // TODO database_is_not_exist
+  
+  @Test(expected = HaltException.class)
+  public void getColumns_table_is_not_exist() throws Exception {
+
+    Context context = (Context) request.attribute(AttributeNames.CONTEXT);
+    context.database = "mysql";
+    request.params(ParameterNames.TABLE, "abcde");
+
+    DBExplorer.getColumns.handle(request, response);
+
+    fail();
   }
 }

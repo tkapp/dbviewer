@@ -39,19 +39,6 @@ public final class DBExplorer {
    * DBExplorer Main method.
    */
   public static void main(String[] args) {
-    port(8080);
-    get("/", (request, response) -> "index\n");
-    get("/foo", (request, response) -> "foooo!");
-    get("/:keyword", (request, response) -> request.params("keyword") + "\n");
-    get("/:keyword/", (request, response) -> "/" + request.params("keyword") + "\n");
-    get("/:keyword/upper", (request, response) -> "/" + request.params("keyword").toUpperCase() + "\n");
-    get("/bar", (request, response) -> "bar!");
-  }
-
-  /**
-   * DBExplorer Main method.
-   */
-  public static void main2(String[] args) {
 
     port(8080);
 
@@ -71,6 +58,7 @@ public final class DBExplorer {
     get("/", getIndex);
     get("/:context/objects", getObjects);
     get("/:context/:table/columns", getColumns);
+    get("/:context//columns", getColumns);
 
     after((request, response) -> {
       Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
@@ -146,7 +134,8 @@ public final class DBExplorer {
     String tableName = request.params(ParameterNames.TABLE);
 
     Table table = DBUtils.selectOne(connection, Table.create,
-        "SELECT table_name name FROM information_schema.tables WHERE table_type = 'BASE TABLE' and UPPER(table_schema) = ?", tableName.toUpperCase());
+        "SELECT table_name name, NULL comment FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND UPPER(table_schema) = ? AND  UPPER(table_name) = ?",
+        context.database.toUpperCase(), tableName.toUpperCase());
     if (table == null) {
       halt(404, "no such table.");
     }
