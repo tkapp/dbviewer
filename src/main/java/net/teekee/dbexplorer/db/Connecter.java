@@ -17,7 +17,7 @@ public interface Connecter {
    * @param context database connection settings.
    * @return Database connection.
    */
-  default public Connection getConnection(Context context) {
+  public default Connection getConnection(Context context) {
     //
     try {
       //

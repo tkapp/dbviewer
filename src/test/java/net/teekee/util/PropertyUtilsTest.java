@@ -28,6 +28,14 @@ public class PropertyUtilsTest {
   }
 
   @Test
+  public void getPropertyFile_invalid_path() {
+
+    Properties p = PropertyUtils.getPropertyFile("a b");
+
+    assertEquals("can get empty properties.", "{}", p.toString());
+  }
+
+  @Test
   public void getProperty_exist_property() {
     String actual = PropertyUtils.getProperty("test.properties", "exist");
 

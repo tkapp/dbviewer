@@ -15,47 +15,47 @@ import net.teekee.dbexplorer.DBExplorer;
  */
 public class PropertyUtils {
 
-	/**
-	 * get Properties object.
-	 * 
-	 * @param path property file path.
-	 * @return Properties object.
-	 */
-	public static Properties getPropertyFile(String path) {
+  /**
+   * get Properties object.
+   * 
+   * @param path property file path.
+   * @return Properties object.
+   */
+  public static Properties getPropertyFile(final String path) {
 
-		File parent;
-		try {
-			URL resource = DBExplorer.class.getClassLoader().getResource(".");
-			parent = new File(new URI(resource.toString()));
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
+    File parent;
+    try {
+      URL resource = DBExplorer.class.getClassLoader().getResource(".");
+      parent = new File(new URI(resource.toString()));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
 
-		Properties p = new Properties();
+    Properties p = new Properties();
 
-		File file = new File(parent.getAbsolutePath() + "/" + path);
-		if (file.exists()) {
-			try (FileReader in = new FileReader(file)) {
+    File file = new File(parent.getAbsolutePath() + "/" + path);
+    if (file.exists()) {
+      try (FileReader in = new FileReader(file)) {
 
-				p.load(in);
+        p.load(in);
 
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
 
-		return p;
-	}
+    return p;
+  }
 
-	/**
-	 * get property value.
-	 * 
-	 * @param path property file path.
-	 * @param key property key.
-	 * @return property value.
-	 */
-	public static String getProperty(String path, String key) {
-		Properties p = getPropertyFile(path);
-		return (String) p.get(key);
-	}
+  /**
+   * get property value.
+   * 
+   * @param path property file path.
+   * @param key property key.
+   * @return property value.
+   */
+  public static String getProperty(final String path, final String key) {
+    Properties p = getPropertyFile(path);
+    return (String) p.get(key);
+  }
 }

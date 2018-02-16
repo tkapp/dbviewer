@@ -15,7 +15,7 @@ import net.teekee.util.PropertyUtils;
  */
 public class Context {
 
-  /** DB */
+  /** DB connector. */
   private Connecter connecter;
 
   /** setting name. */
