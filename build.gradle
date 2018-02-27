@@ -16,7 +16,7 @@ apply plugin: 'checkstyle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-checkstyle.toolVersion = '6.6
+checkstyle.toolVersion = '6.6'
 
 sourceSets {
     test {
