@@ -15,12 +15,12 @@ import java.util.function.Function;
 /**
  * Utilities for DB access.
  */
-public class DBUtils {
+public class DbUtils {
 
   /**
    * Constructor.
    */
-  private DBUtils() {
+  private DbUtils() {
   }
 
   /**
@@ -142,7 +142,7 @@ public class DBUtils {
    * @param connection database connection.
    * @param query SQL query.
    * @param params bind parameters.
-   * @return record count.
+   * @return row count.
    */
   public static int count(Connection connection, String query, Object... params) {
 
@@ -161,10 +161,10 @@ public class DBUtils {
 
   /**
    * Executes SQL that is DDL or DML.
-   * 
-   * @param connection connection.
+   *
+   * @param connection database connection.
    * @param sql sql.
-   * @return record count that is executed.
+   * @return row count for sql executed.
    * @throws SQLException when fail execute sql.
    */
   public static int execute(Connection connection, String sql) throws SQLException {
@@ -172,6 +172,15 @@ public class DBUtils {
     return execute(connection, sql, new Object[0]);
   }
 
+  /**
+   * Executes SQL that is DDL or DML.
+   *
+   * @param connection database connection.
+   * @param sql sql.
+   * @param params bind parameters.
+   * @return row count for sql executed.
+   * @throws SQLException when fail execute sql.
+   */
   public static int execute(Connection connection, String sql, Object... params) throws SQLException {
     //
     try (PreparedStatement statement = connection.prepareStatement(sql)) {

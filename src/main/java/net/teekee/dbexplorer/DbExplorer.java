@@ -7,18 +7,14 @@ import static spark.Spark.exception;
 import static spark.Spark.get;
 import static spark.Spark.halt;
 import static spark.Spark.port;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.Gson;
-
-import net.teekee.db.DBUtils;
+import net.teekee.db.DbUtils;
 import net.teekee.dbexplorer.constant.AttributeNames;
 import net.teekee.dbexplorer.constant.ContentType;
 import net.teekee.dbexplorer.constant.ParameterNames;
@@ -31,9 +27,9 @@ import net.teekee.util.PropertyUtils;
 import spark.Route;
 
 /**
- * DBExplorer Start up class.
+ * DbExplorer Start up class.
  */
-public final class DBExplorer {
+public final class DbExplorer {
 
   /**
    * DBExplorer Main method.
@@ -87,9 +83,8 @@ public final class DBExplorer {
   }
 
   /**
-   * GET /.
-   *
-   * show database list as json.
+   * GET "/".
+   * display database list as json.
    */
   protected static Route getIndex = (request, response) -> {
 
@@ -101,18 +96,20 @@ public final class DBExplorer {
   };
 
   /**
-   * GET /:context/objects.
+   * GET "/:context/objects".
+   * display database objects in context as json.
    */
   protected static Route getObjects = (request, response) -> {
 
     Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
 
-    List<Table> tables = DBUtils.select(connection, Table.create,
-        "SELECT table_name name, table_comment comment FROM information_schema.tables WHERE table_type = 'BASE TABLE' and UPPER(table_schema) = ? order by name",
+    List<Table> tables = DbUtils.select(connection, Table.create,
+        "SELECT table_name name, table_comment comment FROM information_schema.tables "
+            + "WHERE table_type = 'BASE TABLE' and UPPER(table_schema) = ? order by name",
         context.database.toUpperCase());
 
-    List<Table> views = DBUtils.select(connection, Table.create,
+    List<Table> views = DbUtils.select(connection, Table.create,
         "SELECT table_name name, table_comment comment FROM information_schema.tables WHERE table_type = 'VIEW' and UPPER(table_schema) = ? order by name",
         context.database.toUpperCase());
 
@@ -133,14 +130,15 @@ public final class DBExplorer {
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
     String tableName = request.params(ParameterNames.TABLE);
 
-    Table table = DBUtils.selectOne(connection, Table.create,
-        "SELECT table_name name, NULL comment FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND UPPER(table_schema) = ? AND  UPPER(table_name) = ?",
+    Table table = DbUtils.selectOne(connection, Table.create,
+        "SELECT table_name name, NULL comment FROM information_schema.tables "
+            + "WHERE table_type = 'BASE TABLE' AND UPPER(table_schema) = ? AND  UPPER(table_name) = ?",
         context.database.toUpperCase(), tableName.toUpperCase());
     if (table == null) {
       halt(404, "no such table.");
     }
 
-    List<Column> columns = DBUtils.select(connection, Column.create,
+    List<Column> columns = DbUtils.select(connection, Column.create,
         "SELECT column_name name, column_comment FROM information_schema.columns WHERE UPPER(table_schema) = ? AND UPPER(table_name) = ? ORDER BY name",
         context.database.toUpperCase(), tableName.toUpperCase());
 

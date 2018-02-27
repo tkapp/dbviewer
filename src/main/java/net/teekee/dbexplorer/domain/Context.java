@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.teekee.dbexplorer.db.Connecter;
 import net.teekee.dbexplorer.db.DatabaseEngine;
-import net.teekee.dbexplorer.db.MySQLConnecter;
+import net.teekee.dbexplorer.db.MySqlConnecter;
 import net.teekee.util.PropertyUtils;
 
 /**
@@ -67,7 +67,7 @@ public class Context {
    */
   private void setDatabase(String identifier) {
     if (StringUtils.equals(identifier, DatabaseEngine.MySql.identifier)) {
-      connecter = new MySQLConnecter();
+      connecter = new MySqlConnecter();
     } else {
       throw new RuntimeException(identifier + " is not define.");
     }

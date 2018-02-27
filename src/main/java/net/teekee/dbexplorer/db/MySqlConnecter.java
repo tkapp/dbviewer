@@ -5,7 +5,7 @@ import net.teekee.dbexplorer.domain.Context;
 /**
  * Connecter for MySQL.
  */
-public class MySQLConnecter implements Connecter {
+public class MySqlConnecter implements Connecter {
 
   /**
    * create url for connect to MySQL.

@@ -17,7 +17,7 @@ import net.teekee.dbexplorer.constant.AttributeNames;
 import net.teekee.dbexplorer.constant.ParameterNames;
 import net.teekee.dbexplorer.constant.PropertyConstant;
 import net.teekee.dbexplorer.db.DatabaseEngine;
-import net.teekee.dbexplorer.db.MySQLConnecter;
+import net.teekee.dbexplorer.db.MySqlConnecter;
 import net.teekee.dbexplorer.domain.Column;
 import net.teekee.dbexplorer.domain.Context;
 import net.teekee.dbexplorer.test.RequestTestWrapper;
@@ -54,7 +54,7 @@ public class DBExplorerTest {
     context.password = "unittest";
     context.charset = "UTF-8";
 
-    MySQLConnecter connecter = new MySQLConnecter();
+    MySqlConnecter connecter = new MySqlConnecter();
     Connection connection = connecter.getConnection(context);
 
     request.attribute(AttributeNames.CONNECTION, connection);
@@ -75,7 +75,7 @@ public class DBExplorerTest {
   @Test
   public void getIndex() throws Exception {
 
-    Object handle = DBExplorer.getIndex.handle(request, response);
+    Object handle = DbExplorer.getIndex.handle(request, response);
 
     assertEquals("can get json.", "[\"test\",\"sample\",\"user\"]", handle.toString());
   }
@@ -84,7 +84,7 @@ public class DBExplorerTest {
   public void getIndex_not_exist_property_file() throws Exception {
 
     PropertyConstant.DB = "abc";
-    Object handle = DBExplorer.getIndex.handle(request, response);
+    Object handle = DbExplorer.getIndex.handle(request, response);
 
     assertEquals("can get empty list json.", "[]", handle.toString());
   }
@@ -93,7 +93,7 @@ public class DBExplorerTest {
   public void getIndex_not_exist_property_value() throws Exception {
 
     PropertyConstant.CONTEXTS = "abc";
-    Object handle = DBExplorer.getIndex.handle(request, response);
+    Object handle = DbExplorer.getIndex.handle(request, response);
 
     assertEquals("can get empty list json.", "[]", handle.toString());
   }
@@ -104,7 +104,7 @@ public class DBExplorerTest {
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
     context.database = "mysql";
 
-    String json = (String) DBExplorer.getObjects.handle(request, response);
+    String json = (String) DbExplorer.getObjects.handle(request, response);
     Context actual = new Gson().fromJson(json, Context.class);
 
     assertTrue("can get table list.", actual.tables.size() > 0);
@@ -117,7 +117,7 @@ public class DBExplorerTest {
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
     context.database = "abc";
 
-    String json = (String) DBExplorer.getObjects.handle(request, response);
+    String json = (String) DbExplorer.getObjects.handle(request, response);
     Context actual = new Gson().fromJson(json, Context.class);
 
     assertTrue("can get empty table list.", actual.tables.size() == 0);
@@ -130,7 +130,7 @@ public class DBExplorerTest {
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
     context.database = "abc";
 
-    String json = (String) DBExplorer.getObjects.handle(request, response);
+    String json = (String) DbExplorer.getObjects.handle(request, response);
     Context actual = new Gson().fromJson(json, Context.class);
 
     assertTrue("can get empty table list.", actual.tables.size() == 0);
@@ -144,7 +144,7 @@ public class DBExplorerTest {
     context.database = "mysql";
     request.params(ParameterNames.TABLE, "user");
 
-    String json = (String) DBExplorer.getColumns.handle(request, response);
+    String json = (String) DbExplorer.getColumns.handle(request, response);
     Column[] actual = new Gson().fromJson(json, TypeToken.getArray(Column.class).getType());
 
     assertTrue("can get column list", actual.length> 0);
@@ -159,7 +159,7 @@ public class DBExplorerTest {
     context.database = "mysql";
     request.params(ParameterNames.TABLE, "abcde");
 
-    DBExplorer.getColumns.handle(request, response);
+    DbExplorer.getColumns.handle(request, response);
 
     fail();
   }

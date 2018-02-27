@@ -16,7 +16,7 @@ apply plugin: 'checkstyle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-checkstyle.toolVersion = '6.6'
+checkstyle.toolVersion = '8.8'
 
 sourceSets {
     test {
@@ -41,7 +41,7 @@ dependencies {
 fatJar {
     baseName = 'dbexplorer'
     manifest {
-        attributes 'Main-Class': 'net.teekee.dbexplorer.DBExplorer'
+        attributes 'Main-Class': 'net.teekee.dbexplorer.DbExplorer'
     }
     into('.') {
         from 'src/main/resources'

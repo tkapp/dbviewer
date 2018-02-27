@@ -8,7 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 
-import net.teekee.dbexplorer.DBExplorer;
+import net.teekee.dbexplorer.DbExplorer;
 
 /**
  * Utility for property file.
@@ -25,7 +25,7 @@ public class PropertyUtils {
 
     File parent;
     try {
-      URL resource = DBExplorer.class.getClassLoader().getResource(".");
+      URL resource = DbExplorer.class.getClassLoader().getResource(".");
       parent = new File(new URI(resource.toString()));
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
