@@ -9,5 +9,5 @@ public final class ParameterNames {
   public static final String CONTEXT = "context";
 
   /** table. */
-  public static final String TABLE = "table";
+  public static final String Object = "object";
 }

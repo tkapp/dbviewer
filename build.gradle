@@ -43,9 +43,9 @@ fatJar {
     manifest {
         attributes 'Main-Class': 'net.teekee.dbexplorer.DbExplorer'
     }
-    into('.') {
-        from 'src/main/resources'
-    }
+//    into('.') {
+//        from 'src/main/resources'
+//    }
 }
 
 checkstyle {
