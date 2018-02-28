@@ -58,12 +58,12 @@ public final class DbExplorer {
     get("/:context/:object/columns", getColumns);
     post("/:context/execute", postExecute);
 
-    after((request, response) -> {
+    after("/:context/*", (request, response) -> {
       Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
       connection.commit();
     });
 
-    afterAfter((request, response) -> {
+    afterAfter("/:context/*", (request, response) -> {
       Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
       connection.close();
     });

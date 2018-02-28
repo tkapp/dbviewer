@@ -42,10 +42,8 @@ fatJar {
     baseName = 'dbexplorer'
     manifest {
         attributes 'Main-Class': 'net.teekee.dbexplorer.DbExplorer'
+        attributes 'Class-Path': '.'
     }
-//    into('.') {
-//        from 'src/main/resources'
-//    }
 }
 
 checkstyle {
