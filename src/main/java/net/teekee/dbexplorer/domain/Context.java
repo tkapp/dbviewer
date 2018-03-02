@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
+import net.teekee.dbexplorer.constant.PropertyConstant;
 import net.teekee.dbexplorer.db.Connecter;
 import net.teekee.dbexplorer.db.DatabaseEngine;
 import net.teekee.dbexplorer.db.MySqlConnecter;
@@ -51,11 +51,12 @@ public class Context {
   public Context(String name) {
 
     this.name = name;
-    this.host = PropertyUtils.getProperty("db.properties", name + ".host");
-    this.port = PropertyUtils.getProperty("db.properties", name + ".port");
-    this.user = PropertyUtils.getProperty("db.properties", name + ".user");
-    this.password = PropertyUtils.getProperty("db.properties", name + ".password");
-    this.database = PropertyUtils.getProperty("db.properties", name + ".database");
+    this.host = PropertyUtils.getProperty(PropertyConstant.DB, name + ".host");
+    this.port = PropertyUtils.getProperty(PropertyConstant.DB, name + ".port");
+    this.user = PropertyUtils.getProperty(PropertyConstant.DB, name + ".user");
+    this.password = PropertyUtils.getProperty(PropertyConstant.DB, name + ".password");
+    this.database = PropertyUtils.getProperty(PropertyConstant.DB, name + ".database");
+    this.charset = PropertyUtils.getProperty(PropertyConstant.DB, name + ".charset");
 
     setDatabase(DatabaseEngine.MySql.identifier);
   }

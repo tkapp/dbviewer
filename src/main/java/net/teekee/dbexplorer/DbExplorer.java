@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.client.api.Request;
 import com.google.gson.Gson;
 import net.teekee.db.DbUtils;
 import net.teekee.dbexplorer.constant.AttributeNames;
@@ -31,7 +30,7 @@ import spark.Route;
 /**
  * DbExplorer Start up class.
  */
-public final class DbExplorer {
+public class DbExplorer {
 
   /**
    * DBExplorer Main method.
@@ -40,12 +39,20 @@ public final class DbExplorer {
 
     port(8080);
 
+    before((request, response) -> System.out.println("url: " + request.raw().getRequestURL()));
+    
     before("/:context/*", (request, response) -> {
-      String contextName = request.params(ParameterNames.CONTEXT);
+
+      final String contextName = request.params(ParameterNames.CONTEXT);
+
+      if (StringUtils.isEmpty(contextName)) {
+        halt(404, "resource not found.");
+      }
+
       Context context = new Context(contextName);
 
       if (context.host == null) {
-        halt(404);
+        halt(404, "resource not found.");
       }
 
       Connection connection = context.getConnection();
@@ -54,16 +61,32 @@ public final class DbExplorer {
     });
 
     get("/", getIndex);
-    get("/:context/objects", getObjects);
-    get("/:context/:object/columns", getColumns);
+    get("/:context/", getObjects);
+    get("/:context/:object/", getColumns);
     post("/:context/execute", postExecute);
 
-    after("/:context/*", (request, response) -> {
+    before("/:context/*", (request, response) -> {
+
+
+      final String contextName = request.params(ParameterNames.CONTEXT);
+
+      if (StringUtils.isEmpty(contextName)) {
+        return;
+      }
+
       Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
       connection.commit();
     });
 
+    after((request, response) -> response.type(ContentType.APPLICATION_JSON.name));
+
     afterAfter("/:context/*", (request, response) -> {
+      final String contextName = request.params(ParameterNames.CONTEXT);
+
+      if (StringUtils.isEmpty(contextName)) {
+        return;
+      }
+
       Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
       connection.close();
     });
@@ -90,10 +113,9 @@ public final class DbExplorer {
    */
   protected static Route getIndex = (request, response) -> {
 
-    String value = PropertyUtils.getProperty(PropertyConstant.DB, PropertyConstant.CONTEXTS);
-    String[] contexts = (StringUtils.isEmpty(value)) ? new String[0] : value.split(",");
+    final String value = PropertyUtils.getProperty(PropertyConstant.DB, PropertyConstant.CONTEXTS);
+    final String[] contexts = (StringUtils.isEmpty(value)) ? new String[0] : value.split(",");
 
-    response.type(ContentType.APPLICATION_JSON.name);
     return new Gson().toJson(contexts);
   };
 
@@ -117,7 +139,6 @@ public final class DbExplorer {
     result.put("tables", tables);
     result.put("views", views);
 
-    response.type(ContentType.APPLICATION_JSON.name);
     return new Gson().toJson(result);
   };
 
@@ -128,31 +149,32 @@ public final class DbExplorer {
 
     Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
     Context context = (Context) request.attribute(AttributeNames.CONTEXT);
-    String objectName = request.params(ParameterNames.Object);
+    final String objectName = request.params(ParameterNames.Object);
 
-    Table table = DbUtils.selectOne(connection, Table.create,
+    final Table table = DbUtils.selectOne(connection, Table.create,
         "SELECT table_name name, NULL comment FROM information_schema.tables " + "WHERE UPPER(table_schema) = ? AND UPPER(table_name) = ?",
         context.database.toUpperCase(), objectName.toUpperCase());
     if (table == null) {
       halt(404, "no such table or view.");
     }
 
-    List<Column> columns = DbUtils.select(connection, Column.create,
-        "SELECT column_name name, column_comment comment FROM information_schema.columns WHERE UPPER(table_schema) = ? AND UPPER(table_name) = ? ORDER BY ordinal_position",
-        context.database.toUpperCase(), objectName.toUpperCase());
+    List<Column> columns =
+        DbUtils.select(connection, Column.create,
+            "SELECT column_name name, column_comment comment FROM information_schema.columns "
+                + "WHERE UPPER(table_schema) = ? AND UPPER(table_name) = ? ORDER BY ordinal_position",
+            context.database.toUpperCase(), objectName.toUpperCase());
 
-    response.type(ContentType.APPLICATION_JSON.name);
     return new Gson().toJson(columns);
   };
 
-  protected final static Route postExecute = (request, response) -> {
+  protected static Route postExecute = (request, response) -> {
 
-    String sql = request.params("sql");
+    final String sql = request.queryParams("sql");
     if (StringUtils.isEmpty(sql)) {
       halt(500, "sql is required.");
     }
 
-    String first = sql.trim().split(" ")[0];
+    final String first = sql.trim().split(" ")[0];
     Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
 
     if (StringUtils.equals(first.toUpperCase(), "SELECT")) {
@@ -174,9 +196,7 @@ public final class DbExplorer {
 
       int result = DbUtils.execute(connection, sql);
 
-      response.type(ContentType.APPLICATION_JSON.name);
       return String.format("{ result: %d}", result);
     }
-
   };
 }

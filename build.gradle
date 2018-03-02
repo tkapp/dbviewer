@@ -44,6 +44,7 @@ fatJar {
         attributes 'Main-Class': 'net.teekee.dbexplorer.DbExplorer'
         attributes 'Class-Path': '.'
     }
+    exclude('META-INF/INDEX.LIST')
 }
 
 checkstyle {
