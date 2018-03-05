@@ -16,6 +16,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 import net.teekee.db.DbUtils;
+import net.teekee.db.QueryResult;
 import net.teekee.dbexplorer.constant.AttributeNames;
 import net.teekee.dbexplorer.constant.ContentType;
 import net.teekee.dbexplorer.constant.ParameterNames;
@@ -40,7 +41,7 @@ public class DbExplorer {
     port(8080);
 
     before((request, response) -> System.out.println("url: " + request.raw().getRequestURL()));
-    
+
     before("/:context/*", (request, response) -> {
 
       final String contextName = request.params(ParameterNames.CONTEXT);
@@ -64,9 +65,9 @@ public class DbExplorer {
     get("/:context/", getObjects);
     get("/:context/:object/", getColumns);
     post("/:context/execute", postExecute);
+    post("/:context/explain", postExplain);
 
     before("/:context/*", (request, response) -> {
-
 
       final String contextName = request.params(ParameterNames.CONTEXT);
 
@@ -91,18 +92,21 @@ public class DbExplorer {
       connection.close();
     });
 
-    exception(Exception.class, (exception, request, response) -> {
+    exception(RuntimeException.class, (exception, request, response) -> {
 
       try {
         exception.printStackTrace();
         Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
-        connection.rollback();
-        connection.close(); // TODO
-        halt(500);
+        if (connection != null) {
+          connection.rollback();
+        }
+
+        response.raw().setStatus(500);
+        response.body("{error:\"" + exception.getMessage() + "\"}");
+
       } catch (SQLException e) {
-        // TODO
-      } finally {
-        halt(500);
+        e.printStackTrace();
+        halt(500, "Maybe this is bug.");
       }
     });
   }
@@ -174,29 +178,64 @@ public class DbExplorer {
       halt(500, "sql is required.");
     }
 
-    final String first = sql.trim().split(" ")[0];
     Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
 
-    if (StringUtils.equals(first.toUpperCase(), "SELECT")) {
+    if (StringUtils.indexOf(sql, ";") >= 0) {
+      halt(500, "{error: \"You can execute only one sql.Please remove ';'.\""); // TODO DML must be able to execute multipul sql.
+    }
 
-      if (StringUtils.indexOf(sql, ";") >= 0) {
-        halt(500, "dbe can execute only one sql. please remove \";\"."); // TODO
-      }
+    if (isQuery(sql)) {
 
-      List<Map<String, Object>> result = DbUtils.select(connection, sql);
+      QueryResult queryResult = DbUtils.selectWithHeader(connection, sql);
 
       response.type(ContentType.APPLICATION_JSON.name);
-      return new Gson().toJson(result);
+      return new Gson().toJson(queryResult);
 
     } else {
 
-      if (StringUtils.indexOf(sql, ";") >= 0) {
-        halt(500, "dbe can execute only one sql. please remove \";\"."); // TODO
-      }
-
       int result = DbUtils.execute(connection, sql);
 
-      return String.format("{ result: %d}", result);
+      return String.format("{result: %d}", result);
     }
   };
+
+
+  private static Route postExplain = (request, response) -> {
+
+    final String sql = request.queryParams("sql");
+    if (StringUtils.isEmpty(sql)) {
+      halt(500, "{error: \\\"sql is required.\"");
+    }
+
+
+    if (StringUtils.indexOf(sql, ";") >= 0) { // TODO
+      halt(500, "{error: \"You can explain only one sql.Please remove ';'.\"");
+    }
+
+    Connection connection = (Connection) request.attribute(AttributeNames.CONNECTION);
+    QueryResult queryResult = DbUtils.explain(connection, sql);
+
+    connection.rollback();
+
+    response.type(ContentType.APPLICATION_JSON.name);
+    return new Gson().toJson(queryResult);
+  };
+
+  /**
+   * TODO WITH SELECT etc...
+   */
+  private static boolean isQuery(String s) {
+
+    final String sql = s.trim().toUpperCase();
+
+    if (sql.startsWith("SELECT")) {
+      return true;
+    }
+
+    if (sql.startsWith("SHOW")) {
+      return true;
+    }
+
+    return false;
+  }
 }

@@ -20,8 +20,7 @@ public class DbUtils {
   /**
    * Constructor.
    */
-  private DbUtils() {
-  }
+  private DbUtils() {}
 
   /**
    * execute query and convert to Map object.
@@ -38,12 +37,10 @@ public class DbUtils {
       try {
 
         ResultSetMetaData metaData = rs.getMetaData();
-        int columnCount = metaData.getColumnCount();
-
-        return convertToMap(rs, metaData, columnCount);
+        return convertToMap(rs, metaData);
 
       } catch (SQLException e) {
-        throw new RuntimeException("Can't execute query. query=" + query, e);
+        throw new RuntimeException(e);
       }
 
     }, query, params);
@@ -76,7 +73,7 @@ public class DbUtils {
         return result;
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Can't execute query. query=" + query, e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -94,9 +91,7 @@ public class DbUtils {
 
       try {
         ResultSetMetaData metaData = rs.getMetaData();
-        int columnCount = metaData.getColumnCount();
-
-        Map<String, Object> item = convertToMap(rs, metaData, columnCount);
+        Map<String, Object> item = convertToMap(rs, metaData);
         return item;
       } catch (SQLException e) {
         throw new RuntimeException("Can't convert map.", e);
@@ -132,7 +127,7 @@ public class DbUtils {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Can't execute query. query=" + query, e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -155,7 +150,7 @@ public class DbUtils {
         return rs.getInt(1);
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Can't execute query. query=" + query, e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -189,7 +184,7 @@ public class DbUtils {
 
       return statement.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException("Can't execute sql. sql=" + sql, e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -200,18 +195,57 @@ public class DbUtils {
         statement.setInt(i + 1, (int) params[i]);
       } else if (params[i] instanceof BigInteger) {
         statement.setInt(i + 1, ((BigInteger) params[i]).intValue());
-      } else { // TODO
+      } else { // TODO need another type method.
         statement.setString(i + 1, (String) params[i]);
       }
     }
   }
 
-  private static Map<String, Object> convertToMap(ResultSet rs, ResultSetMetaData metaData, int columnCount) throws SQLException {
+  private static Map<String, Object> convertToMap(ResultSet rs, ResultSetMetaData metaData) throws SQLException {
+
     Map<String, Object> item = new HashMap<>();
 
+    int columnCount = metaData.getColumnCount();
     for (int i = 0; i < columnCount; i++) {
       item.put(metaData.getColumnName(i + 1), rs.getObject(i + 1));
     }
     return item;
+  }
+
+  /**
+   * execute query and convert to Map object with column info.
+   *
+   * @param connection DB connection.
+   * @param query SQL query.
+   * @param params bind parameter.
+   * @return entity list. if query result is empty, return empty list.
+   */
+  public static QueryResult selectWithHeader(final Connection connection, final String query, final Object... params) {
+  
+    List<String> header = new ArrayList<>();
+    List<Map<String, Object>> body = select(connection, rs -> {
+  
+      try {
+        ResultSetMetaData metaData = rs.getMetaData();
+  
+        if (header.size() == 0) {
+          for (int i = 0; i < metaData.getColumnCount(); i++) {
+            header.add(metaData.getColumnName(i + 1));
+          }
+        }
+  
+        return convertToMap(rs, metaData);
+  
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+  
+    }, query, params);
+  
+    return new QueryResult(header, body);
+  }
+
+  public static QueryResult explain(final Connection connection, final String sql) {
+    return selectWithHeader(connection, "explain " + sql);
   }
 }
