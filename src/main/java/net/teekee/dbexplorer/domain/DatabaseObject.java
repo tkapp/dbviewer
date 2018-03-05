@@ -1,7 +1,11 @@
 package net.teekee.dbexplorer.domain;
 
-public class DatabaseObject {
+/**
+ * Database object like table, view, index.
+ */
+public abstract class DatabaseObject {
 
-	public String name;
-	
+  /** object name. */
+  public String name;
+
 }
