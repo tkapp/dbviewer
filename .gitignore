@@ -4,3 +4,7 @@
 .project
 /bin/
 /build/
+gradle.properties
+.dbeaver-data-sources.xml
+/.vscode/
+.DS_Store

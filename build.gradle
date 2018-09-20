@@ -1,16 +1,11 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
-    }
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'java'
 }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
-apply plugin: 'eu.appsatori.fatjar'
 apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 
@@ -38,7 +33,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-fatJar {
+shadowJar {
     baseName = 'dbexplorer'
     manifest {
         attributes 'Main-Class': 'net.teekee.dbexplorer.DbExplorer'
@@ -58,4 +53,4 @@ findbugs {
     ignoreFailures = true
 }
 
-defaultTasks 'findbugsMain', 'checkstyleMain', 'test', 'fatJar'
+defaultTasks 'findbugsMain', 'checkstyleMain', 'test', 'shadowJar'
